@@ -1,0 +1,56 @@
+branches:
+  only:
+    - master
+    - "/^v.*$/"
+
+language: cpp
+
+matrix:
+  include:
+    - name: Linux x86_64
+      dist: bionic
+      script:
+        - make -C libretro -j 4
+        - zip snes9x-Linux-x86_64.zip libretro/snes9x_libretro.so
+    - name: Linux arm64
+      dist: bionic
+      arch: arm64
+      before_install:
+        - sudo apt-get install zip
+      script:
+        - make platform=unix-armv-neon-hardfloat -C libretro -j 4
+        - zip snes9x-Linux-arm64.zip libretro/snes9x_libretro.so
+    - name: Linux armv7 neon
+      dist: bionic
+      services:
+        - docker
+      before_install:
+        - sudo apt-get install zip
+      script:
+        - docker pull dockcross/linux-armv7
+        - docker run --rm -v "$PWD":/usr/src/myapp -w /usr/src/myapp dockcross/linux-armv7 make platform=unix-armv-neon-hardfloat -C libretro -j 4
+        - zip snes9x-Linux-arm.zip libretro/snes9x_libretro.so
+    - name: OSX x86_64
+      os: osx
+      osx_image: xcode11.2
+      script:
+        - make -C libretro -j 4
+        - zip snes9x-OSX-x86_64.zip libretro/snes9x_libretro.dylib
+    - name: Windows x86_64
+      os: windows
+      before_install:
+        - choco install make --ignore-checksums
+      script:
+        - make platform=win -C libretro -j 4
+        - 7z a snes9x-Windows-x86_64.zip libretro/snes9x_libretro.dll
+
+deploy:
+  skip_cleanup: true
+  provider: releases
+  api_key:
+    secure: VPNVPnweiGfJpcVH2jOHTTQprRzCjN/Y4t/YBSXfr4eT5pToQwl/lr4IQm8SKb8VUiiAqtxZoyzuFq6Yo+BRaPOqOXDesKLmd4igvkH2pbUIeOEjKnnYdqig72i9UDlIuF4Mnn1Bja5TkVsWzv5C163w8osdBZyhPZhxDorNHb6wGvRZbb5mw1uAml4xxWUkvJNKZ+5rYwiy3GdfP7Y5fott5ZpBDzSNgy0+uxywrYHTS18zyYMM/MIidB7v72tkciIsGiRh+f9EA9WJvEcUKAbzDhybLSLtlqg5ymww2MaO5eVt+2rX+gvWpm5jtEYbTyPcXu1475k+QA3bZmiA3GFCTbXp3ak11vz+moDQAWLfwdgvkhNY6/nA4ox425PJE2DEb4TS4Me/TUv/Cm5HTA/AqfajCk3/LK6elYql8+43hEMUTZS9poErUFwktfFNk4Ox5nZVhNWmXteRj8Wwayteh3PuRZsBySKekCx6/1E9di34DSDw5Y3SPV1xlIzGhAZJIR1E7OAuFbV36X3FDfd42a21rMoR+dO47NWCue2skvfbEHXvIVWFmtDTn9LatJGTEfxKfxZw3ZCzVebnSH4SMwuWJmQr5ZT8AjQL2sRjmxxZRWkAp9Vnh6A7vDNa1WUok0ht/dGtyg+vBSl54Gx6U+7RwVP2s9ASjrSZhBc=
+  file: snes9x-${TRAVIS_OS_NAME}-${TRAVIS_CPU_ARCH}-${TRAVIS_TAG:1}.zip
+  on:
+    repo: piepacker/snes9x
+    tags: true
+
