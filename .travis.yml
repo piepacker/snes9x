@@ -11,7 +11,7 @@ matrix:
       dist: bionic
       script:
         - make -C libretro -j 4
-        - zip snes9x-Linux-x86_64.zip libretro/snes9x_libretro.so
+        - zip -j snes9x-Linux-x86_64.zip libretro/snes9x_libretro.so
     - name: Linux arm64
       dist: bionic
       arch: arm64
@@ -19,7 +19,7 @@ matrix:
         - sudo apt-get install zip
       script:
         - make platform=unix-armv-neon-hardfloat -C libretro -j 4
-        - zip snes9x-Linux-arm64.zip libretro/snes9x_libretro.so
+        - zip -j snes9x-Linux-arm64.zip libretro/snes9x_libretro.so
     - name: Linux armv7 neon
       dist: bionic
       services:
@@ -29,20 +29,20 @@ matrix:
       script:
         - docker pull dockcross/linux-armv7
         - docker run --rm -v "$PWD":/usr/src/myapp -w /usr/src/myapp dockcross/linux-armv7 make platform=unix-armv-neon-hardfloat -C libretro -j 4
-        - zip snes9x-Linux-arm.zip libretro/snes9x_libretro.so
+        - zip -j snes9x-Linux-arm.zip libretro/snes9x_libretro.so
     - name: OSX x86_64
       os: osx
       osx_image: xcode11.2
       script:
         - make -C libretro -j 4
-        - zip snes9x-OSX-x86_64.zip libretro/snes9x_libretro.dylib
+        - zip -j snes9x-OSX-x86_64.zip libretro/snes9x_libretro.dylib
     - name: Windows x86_64
       os: windows
       before_install:
         - choco install make --ignore-checksums
       script:
         - make platform=win -C libretro -j 4
-        - 7z a snes9x-Windows-x86_64.zip libretro/snes9x_libretro.dll
+        - 7z a snes9x-Windows-x86_64.zip ./libretro/snes9x_libretro.dll
 
 deploy:
   skip_cleanup: true
